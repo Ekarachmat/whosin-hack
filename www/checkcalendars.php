@@ -29,9 +29,10 @@ $client->setAccessToken($config->getAuthToken());
 
 $cal = new Google_CalendarService($client);
 
+$today = time();
+
 foreach ($calendars as $calendar) {
 	$events = $cal->events->listEvents($calendar->getEmail());
-    $today = time();
 
     foreach ($events->getItems() as $event) {
     	// $startdatetime = $event->start->dateTime;
