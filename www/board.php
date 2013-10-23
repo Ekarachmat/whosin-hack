@@ -1,88 +1,9 @@
-<?php
-require_once dirname(__FILE__) . '/../GoogleClientApi/src/Google_Client.php';
-require_once dirname(__FILE__) . '/../GoogleClientApi/src/contrib/Google_CalendarService.php';
-require_once dirname(__FILE__) . '/../config/development.php';
-require_once dirname(__FILE__) . '/../classes/allcalendarsclass.php';
-require_once dirname(__FILE__) . '/../classes/configclass.php';
-
-session_start();
-
-$config = new Config();
-$config->load();
-
-$allCalendars = new AllCalendars();
-
-$query = array();
-
-$calendars = $allCalendars->getCalendars($query);
-
-$client = new Google_Client();
-$client->setApplicationName("WhosIn");
-
-$client->setClientId(GOOGLE_CLIENT_ID);
-$client->setClientSecret(GOOGLE_CLIENT_SECRET);
-$client->setDeveloperKey(GOOGLE_API_KEY); // API key
-
-$client->setRedirectUri($scriptUri);
-$client->setUseObjects(true);
-$client->setAccessToken($config->getAuthToken());
-
-$cal = new Google_CalendarService($client);
-
-$today = time();
-$todayFormatted = date('Y-m-d');
-$todayStart = $todayFormatted . 'T00:00:00-00:00';
-$todayEnd = $todayFormatted . 'T23:59:59-00:00';
-$statusArray = array();
-
-foreach ($calendars as $calendar) {
-    $optParams = array('timeMin' => $todayStart, 'timeMax' => $todayEnd);
-	$events = $cal->events->listEvents($calendar->getEmail(), $optParams);
-
-    $todaysLocation = 'Unknown';
-
-    while (true) {
-        foreach ($events->getItems() as $event) {
-        	$startdatetime = $event->start->dateTime;
-        	$enddatetime = $event->end->dateTime;
-
-            $start = $event->start->date;
-            $starttime = strtotime($start);
-            $end = $event->end->date;
-            $endtime = strtotime($end);
-            $summary = $event->summary;
-
-            if ($start) {
-              if ($today >= $starttime && $today <= $endtime) {
-                if ($event->location) {
-                    // echo '<br>TODAY: ' . $event->creator->displayName . ' - ' . $event->location;
-                    $todaysLocation = $event->location;
-                }
-              }
-            }
-        }
-
-        $pageToken = $events->getNextPageToken();
-
-        if ($pageToken) {
-            $optParams = array('timeMin' => $todayStart, 'timeMax' =>  $todayEnd, 'pageToken' => $pageToken);
-            $events = $cal->events->listEvents($calendar->getEmail(), $optParams);
-        } else {
-            break;
-        }
-    }
-
-    // construct status array
-    // $statusArray[$calendar->getFirstName()] = $todaysLocation;
-    $statusArray[] = array("name" => $calendar->getFirstName(), "location" => $todaysLocation);
-}
-?>
 <!DOCTYPE html>
 <html style="height:100%;">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-	<title>WhosIn - LiveBoard</title>
+	<title>Untitled</title>
 <!--Adobe Edge Runtime-->
     <script type="text/javascript" charset="utf-8" src="Flip2_edgePreload.js"></script>
     <style>
@@ -606,7 +527,6 @@ foreach ($calendars as $calendar) {
             <div id="Stage_Line6_Character">NAME</div>
             <div id="Stage_Line6_divider"></div>
         </div>
-        <div id="Stage_labelName" class="edgeLoad-EDGE-3123259">NAME</div>
         <div id="Stage_loadingAnimation" class="edgeLoad-EDGE-3123259">
             <div id="Stage_loadingAnimation_labelNameCopy">ACTIVATING TALISNET<br>LOCATING DAVE<br>DEPLOYING DRONES<br>STALKING EMPLOYEES<br>FINDING SALES AGENTS<br>ACTIVATING TALISNET</div>
             <div id="Stage_loadingAnimation_Rectangle"></div>
@@ -672,6 +592,17 @@ foreach ($calendars as $calendar) {
         <div id="Stage_Rectangle8Copy3" class="edgeLoad-EDGE-3123259"></div>
         <div id="Stage_Rectangle8Copy4" class="edgeLoad-EDGE-3123259"></div>
         <div id="Stage_Rectangle8Copy5" class="edgeLoad-EDGE-3123259"></div>
+        <div id="Stage_time2" class="edgeLoad-EDGE-3123259">
+            <div id="Stage_time2_topFlapCopy2"></div>
+            <div id="Stage_time2_topFlapCopy3"></div>
+            <div id="Stage_time2_topFlapCopy6"></div>
+            <div id="Stage_time2_topFlapCopy7"></div>
+            <div id="Stage_time2_topFlapCopy8"></div>
+            <div id="Stage_time2_topFlapCopy4"></div>
+            <div id="Stage_time2_time">23 / 10 / 2013 14 : 17 : 57</div>
+            <div id="Stage_time2_dividerCopy2"></div>
+        </div>
+        <div id="Stage_labelName" class="edgeLoad-EDGE-3123259">NAME</div>
     </div>
     <script src="assets/js/jquery-2.0.3.js"></script>
     <script>
@@ -680,13 +611,51 @@ foreach ($calendars as $calendar) {
     		AdobeEdge.Symbol.bindElementAction(compId, 'stage', 'document', 'compositionReady', function(sym, e){
 
 			var letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-	    	var status = <?php echo json_encode($statusArray) ?>;
+	    	// var status = <?php echo json_encode($statusArray) ?>;
+	    	var status;
+
+			$.get( "/api/getstatus.php", function( data ) {
+				status = data;
+			});
+
+	    	var startRow = 0;
+	    	var screenRows = 6;
+	    	var rowCharacters = 16;
+
+	        var intObject = setInterval(function() {
+	        	if (status) {
+		        	var rows = status.slice(startRow, startRow + screenRows);
+
+		        	// show the rows
+			    	showStatusRows(rows);
+
+			    	startRow += screenRows;
+
+			    	if (startRow > status.length) {
+			    		startRow = 0;
+			    	}
+			    }
+			}, 5000);
+
+	        function findNamePosition(name) {
+	        	var foundRow = -1;
+
+	        	for (var row=0; row < status.length; row++) {
+	        		if (status[row].name.toUpperCase() === name.toUpperCase()) {
+	        			foundRow = row;
+	        			break;
+	        		}
+	        	}
+
+	        	return foundRow;
+	        }
 
 	    	function flipToNameFunction(id, nameFrom, nameTo) {
 	    		var index = 0;
+	    		var clear = (nameFrom == "" && nameTo == "" ? true : false);
 
-	    		var startPos = nameFrom;
-	    		var endPos = nameTo;
+	    		var startPos = (nameFrom == "" ? 0 : findNamePosition(nameFrom));
+	    		var endPos = (nameTo == "" ? status.length : findNamePosition(nameTo));
 
 		        if (startPos == endPos) {
 					var charName = sym.$(id);
@@ -700,7 +669,11 @@ foreach ($calendars as $calendar) {
 						startPos++;
 
 						if(startPos == endPos){
-							charName.text(status[startPos].name.toUpperCase());
+							if (clear == false) {
+								charName.text(status[startPos].name.toUpperCase());
+							} else {
+								charName.text("");
+							}
 						    clearInterval(intObject);
 						}
 					}, 50);
@@ -732,31 +705,38 @@ foreach ($calendars as $calendar) {
 			    }
 			}
 
-        	for (var row=0; row < status.length; row++) {
-				var name = status[row].name.toUpperCase();
-				var location = status[row].location.toUpperCase();
+			function showStatusRows(statusRows) {
+	        	for (var row=0; row < statusRows.length; row++) {
+					var name = statusRows[row].name.toUpperCase();
+					var location = statusRows[row].location.toUpperCase();
 
-				console.log(name + ' - ' + location);
+					console.log(name + ' - ' + location);
 
-        		// var rowName = sym.$("Stage_Line" + row + "_Character");
+	        		flipToNameFunction("Stage_Line" + (row + 1) + "_Character", "", name);
 
-        		flipToNameFunction("Stage_Line" + row + "_Character", 0, row);
-        		// rowName.text(name);
+	        		for (var character=0; character < rowCharacters; character++) {
+	        			var flipToLetter = "";
 
-        		for (var character=0; character < 16; character++) {
-        			var charName = sym.$("Stage_Line" + row + "_locationCharacter" + (character + 1) + "_Character");
-        			var flipToLetter = "";
+	        			if (character < location.length) {
+		        			flipToLetter = location[character];
+	        			} else {
+		        			flipToLetter = " ";        				        				
+	        			}
 
-        			if (character < location.length) {
-	        			flipToLetter = location[character];
-        			} else {
-	        			flipToLetter = " ";        				        				
-        			}
+	        			flipToLetterFunction("Stage_Line" + (row + 1) + "_locationCharacter" + (character + 1) + "_Character", "A", flipToLetter);
+	        		}
+	        	}
 
-        			flipToLetterFunction("Stage_Line" + row + "_locationCharacter" + (character + 1) + "_Character", "A", flipToLetter);
-        		}
-        	}
-
+	        	// clear remaining rows
+	        	if (statusRows.length < screenRows) {
+	        		for (var row=statusRows.length; row < screenRows; row++) {
+		        		flipToNameFunction("Stage_Line" + (row + 1) + "_Character", "", "");
+		        		for (var character=0; character < rowCharacters; character++) {
+		        			flipToLetterFunction("Stage_Line" + (row + 1) + "_locationCharacter" + (character + 1) + "_Character", "A", " ");
+		        		}
+	        		}
+	        	}
+	        }
     	});
 	});
     </script>
