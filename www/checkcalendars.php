@@ -30,26 +30,46 @@ $client->setAccessToken($config->getAuthToken());
 $cal = new Google_CalendarService($client);
 
 $today = time();
+$todayFormatted = date('Y-m-d');
+$todayStart = $todayFormatted . 'T00:00:00-00:00';
+$todayEnd = $todayFormatted . 'T23:59:59-00:00';
 
 foreach ($calendars as $calendar) {
-	$events = $cal->events->listEvents($calendar->getEmail());
+    $optParams = array('timeMin' => $todayStart, 'timeMax' => $todayEnd);
+	$events = $cal->events->listEvents($calendar->getEmail(), $optParams);
 
-    foreach ($events->getItems() as $event) {
-    	// $startdatetime = $event->start->dateTime;
-    	// $enddatetime = $event->end->dateTime;
+    $todaysLocation = 'Unknown';
 
-        $start = $event->start->date;
-        $starttime = strtotime($start);
-        $end = $event->end->date;
-        $endtime = strtotime($end);
-        $summary = $event->summary;
+    while (true) {
+        foreach ($events->getItems() as $event) {
+        	$startdatetime = $event->start->dateTime;
+        	$enddatetime = $event->end->dateTime;
 
-        // echo '<br>' . $calendar->getEmail() . ' start:' . $event->start->date . ' end:' . $event->end->date . ' summary:' . $event->summary . ' location:' . $event->location;
+            $start = $event->start->date;
+            $starttime = strtotime($start);
+            $end = $event->end->date;
+            $endtime = strtotime($end);
+            $summary = $event->summary;
 
-        if ($start) {
-          if ($today >= $starttime && $today <= $endtime) {
-            echo '<br>TODAY: ' . $event->creator->displayName . ' - ' . $event->location;
-          }
+            if ($start) {
+              if ($today >= $starttime && $today <= $endtime) {
+                if ($event->location) {
+                    // echo '<br>TODAY: ' . $event->creator->displayName . ' - ' . $event->location;
+                    $todaysLocation = $event->location;
+                }
+              }
+            }
+        }
+
+        $pageToken = $events->getNextPageToken();
+
+        if ($pageToken) {
+            $optParams = array('timeMin' => $todayStart, 'timeMax' =>  $todayEnd, 'pageToken' => $pageToken);
+            $events = $cal->events->listEvents($calendar->getEmail(), $optParams);
+        } else {
+            break;
         }
     }
+
+    echo '<br>' . $calendar->getFirstName() . ' - ' . $todaysLocation;
 }

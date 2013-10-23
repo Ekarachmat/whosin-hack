@@ -52,7 +52,7 @@ class Calendars extends BaseClass {
             $this->setEmail($doc['email']);
         }
         if(isset($doc['first_name'])) {
-            $this->setFirstName($doc['fist_name']);
+            $this->setFirstName($doc['first_name']);
         }
         if(isset($doc['last_name'])) {
             $this->setLastName($doc['last_name']);
