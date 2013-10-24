@@ -14,7 +14,6 @@
 </head>
 <body style="margin:0;padding:0;height:100%;">
 	<div id="Stage" class="EDGE-3123259">
-	
         <div id="Stage_world-map-dotted-black" class="edgeLoad-EDGE-3123259"></div>
         <div id="Stage_Rectangle4" class="edgeLoad-EDGE-3123259"></div>
         <div id="Stage_Line1" class="edgeLoad-EDGE-3123259">
@@ -606,14 +605,14 @@
     </div>
     <script src="assets/js/jquery-2.0.3.js"></script>
     <script>
-		// perform all actions on completion of Adobe composition
+		// perform all actions on completion of Adobe composition load
 		AdobeEdge.bootstrapCallback(function(compId) {
     		AdobeEdge.Symbol.bindElementAction(compId, 'stage', 'document', 'compositionReady', function(sym, e){
 
-			var letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-	    	// var status = <?php echo json_encode($statusArray) ?>;
+			var letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!*- ";
 	    	var status;
 
+	    	// fetch data on user statuses from API
 			$.get( "/api/getstatus.php", function( data ) {
 				status = data;
 			});

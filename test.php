@@ -1,69 +1,49 @@
 <?php
-
 require_once dirname(__FILE__) . '/GoogleClientApi/src/Google_Client.php';
 require_once dirname(__FILE__) . '/GoogleClientApi/src/contrib/Google_CalendarService.php';
+require_once dirname(__FILE__) . '/config/development.php';
+require_once dirname(__FILE__) . '/classes/allcalendarsclass.php';
+require_once dirname(__FILE__) . '/classes/configclass.php';
 
-$access_token = '{"access_token":"ya29.AHES6ZQ7j5adBJ4Gv7MQR7Tfw5HknjXbxInvHDhd-ojFzccshSNIzcN8","token_type":"Bearer","expires_in":3600,"refresh_token":"1\/Ln4vkx3Gme1nT8AltrbEMKEoscmbwgEl1JgtCCSJCag","created":1382450266}';
+session_start();
 
-$scriptUri = "http://localhost/";
+$config = new Config();
+$config->load();
+
+$allCalendars = new AllCalendars();
+
+$query = array();
+
+$calendars = $allCalendars->getCalendars($query);
 
 $client = new Google_Client();
-$client->setApplicationName("Google Calendar PHP Starter Application");
+$client->setApplicationName("WhosIn");
 
-$client->setClientId('31669776438-62i79u9cn6i4548fngf5dqji7bpsf4v8.apps.googleusercontent.com');
-$client->setClientSecret('9BEsrm2VWKiDHXCuQvP4AxjS');
+$client->setClientId(GOOGLE_CLIENT_ID);
+$client->setClientSecret(GOOGLE_CLIENT_SECRET);
+$client->setDeveloperKey(GOOGLE_API_KEY); // API key
+
 $client->setRedirectUri($scriptUri);
-$client->setDeveloperKey(AIzaSyArat8OjTNb1VzhhpQnXPxJzctiyICwJV4); // API key
 $client->setUseObjects(true);
+$client->setAccessToken($config->getAuthToken());
 
 $cal = new Google_CalendarService($client);
 
-$client->setAccessToken($access_token);
+// $calList = $cal->calendarList->listCalendarList();
+// print "<h1>Calendar List</h1><pre>" . print_r($calList, true) . "</pre>";
 
-if ($client->getAccessToken()) {
-    $calList = $cal->calendarList->listCalendarList();
-    print "<h1>Calendar List</h1><pre>" . print_r($calList, true) . "</pre>";
+$holidayCal = "talis.com_hq7kafi7h29mt3gn61khjjb404@group.calendar.google.com";
 
-    // $userCal = $cal->calendars->get("talis.com_hq7kafi7h29mt3gn61khjjb404@group.calendar.google.com");
-    // print "<h1>Calendar</h1><pre>" . print_r($userCal, true) . "</pre>";
+$specificDay = strtotime("2013-10-28");
 
-    // $events = $cal->events->listEvents('talis.com_hq7kafi7h29mt3gn61khjjb404@group.calendar.google.com');
+$todayFormatted = date('Y-m-d', $specificDay);
+$todayStart = $todayFormatted . 'T00:00:00-00:00';
+$todayEnd = $todayFormatted . 'T23:59:59-00:00';
 
-    // foreach ($events->getItems() as $event) {
-    //     print_r($event->getSummary());
-    // }
+$optParams = array('timeMin' => $todayStart, 'timeMax' => $todayEnd);
+$events = $cal->events->listEvents($holidayCal, $optParams);
 
-
-    $userCal = $cal->calendars->get("jb@talis.com");
-    print "<h1>Calendar</h1><pre>" . print_r($userCal, true) . "</pre>";
-
-    $events = $cal->events->listEvents('jb@talis.com');
-    $today = time();
-
-    foreach ($events->getItems() as $event) {
-        $start = $event->start->date;
-        $starttime = strtotime($start);
-        $end = $event->end->date;
-        $endtime = strtotime($end);
-        $summary = $event->summary;
-
-        if ($start) {
-          if ($today >= $starttime && $today <= $endtime) {
-            // echo '<br>today:' . $today . ' start:' . $starttime . ' end:' . $endtime;
-            // echo '<br>start:' . $start . ' end:' . $end . ' summary:' . $summary;
-            // echo '<br>';
-            // print_r($event);
-
-            echo '<br>' . $event->creator->displayName . ' - ' . $event->location;
-          }
-        }
-    }
-
-    $_SESSION['token'] = $client->getAccessToken();
-} else {
-    $authUrl = $client->createAuthUrl();
-    print "<a class='login' href='$authUrl'>Connect Me!</a>";
+foreach ($events->getItems() as $event) {
+    echo "<br>User:" . $event->creator->displayName . " - " . $event->creator->email;
 }
-
-
 ?>
