@@ -12,6 +12,7 @@ class Calendars extends BaseClass {
 	private $last_name;
 	private $auth_token;
 	private $date_created;
+    private $mac_address;
 
 	public function __construct() {
 	    $this->setMongoDatabaseName(WHOSINDB);
@@ -37,6 +38,10 @@ class Calendars extends BaseClass {
             $doc['auth_token'] = $this->auth_token;
         }
 
+        if(!empty($this->mac_address)) {
+            $doc['mac_address'] = $this->mac_address;
+        }
+
         $doc['date_created'] = $this->dateCreated ? $this->dateCreated : new MongoDate();
 
         return($doc);
@@ -59,6 +64,9 @@ class Calendars extends BaseClass {
         }
         if(isset($doc['auth_token'])) {
             $this->setAuthToken($doc['auth_token']);
+        }
+        if(isset($doc['mac_address'])) {
+            $this->setMacAddress($doc['mac_address']);
         }
         if(isset($doc['date_created'])) {
             $this->setDateCreated($doc['date_created']);
@@ -95,6 +103,10 @@ class Calendars extends BaseClass {
 		$this->auth_token = $newAuthToken;
 	}
 
+    public function setMacAddress($newMacAddress) {
+        $this->mac_address = $newMacAddress;
+    }
+
     public function setDateCreated($dateCreated) {
         if(is_string($dateCreated)) {
             $dateCreated = new MongoDate(strtotime($dateCreated));
@@ -127,6 +139,10 @@ class Calendars extends BaseClass {
     	return $this->auth_token;
     }
 
+    public function getMacAddress() {
+        return $this->mac_address;
+    }
+
     public function getDateCreated() {
         return $this->dateCreated;
     }
@@ -142,6 +158,10 @@ class Calendars extends BaseClass {
         $json['email'] = $doc['email'];
         $json['first_name'] = $doc['first_name'];
         $json['last_name'] = $doc['last_name'];
+
+        if (isset($doc['mac_address'])) {
+            $json['mac_address'] = $doc['mac_address'];
+        }
 
         if (isset($doc['auth_token'])) {
             $json['auth_token'] = $doc['auth_token'];

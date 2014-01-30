@@ -60,7 +60,7 @@ Symbol.bindTriggerAction(compId,symbolName,"Default Timeline",100,function(sym,e
 
 //Edge symbol: 'time'
 (function(symbolName){Symbol.bindTriggerAction(compId,symbolName,"Default Timeline",0,function(sym,e){var currentdate=new Date();var datetime=""+("0"+currentdate.getDate()).substring(currentdate.getDate()>9?1:0)+" / "
-+("0"+currentdate.getMonth()).substring(currentdate.getMonth()>9?1:0)+" / "
++("0"+(currentdate.getMonth()+1)).substring((currentdate.getMonth()+1)>9?1:0)+" / "
 +currentdate.getFullYear()+"  "
 +("0"+currentdate.getHours()).substring(currentdate.getHours()>9?1:0)+" : "
 +("0"+currentdate.getMinutes()).substring(currentdate.getMinutes()>9?1:0)+" : "
