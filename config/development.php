@@ -8,6 +8,11 @@ define("WHOSINDB", "whosin");
 define("CALENDARS_COLLECTION", "calendars");
 define("CONFIG_COLLECTION", "config");
 
-define("GOOGLE_CLIENT_ID", "<CLIENT ID GOES HERE>");
-define("GOOGLE_CLIENT_SECRET", "<CLIENT SECRET GOES HERE>");
-define("GOOGLE_API_KEY", "<API KEY GOES HERE>");
+// get from environment variables...
+$googleClientId = getenv('WHOSIN_GOOGLE_CLIENT_ID');
+$googleClientSecret = getenv('WHOSIN_GOOGLE_CLIENT_SECRET');
+$googleAPIKey = getenv('WHOSIN_GOOGLE_API_KEY');
+
+define("GOOGLE_CLIENT_ID", $googleClientId);
+define("GOOGLE_CLIENT_SECRET", $googleClientSecret);
+define("GOOGLE_API_KEY", $googleAPIKey);
