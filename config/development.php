@@ -8,6 +8,6 @@ define("WHOSINDB", "whosin");
 define("CALENDARS_COLLECTION", "calendars");
 define("CONFIG_COLLECTION", "config");
 
-define("GOOGLE_CLIENT_ID", "31669776438-3ek9lqslfv1gnocun6qc2lapviglbbjf.apps.googleusercontent.com");
-define("GOOGLE_CLIENT_SECRET", "Cuewyq3eFmTk0ewBn0zatKWg");
-define("GOOGLE_API_KEY", "AIzaSyArat8OjTNb1VzhhpQnXPxJzctiyICwJV4");
+define("GOOGLE_CLIENT_ID", "<CLIENT ID GOES HERE>");
+define("GOOGLE_CLIENT_SECRET", "<CLIENT SECRET GOES HERE>");
+define("GOOGLE_API_KEY", "<API KEY GOES HERE>");
